@@ -1,6 +1,7 @@
-FROM golang:1.14.1 as builder
-RUN mkdir /build
-ADD . /build/
+FROM golang:1.14.1 as go-builder
+RUN mkdir -p /build/cmd
+ADD cmd /build/cmd
+ADD go.sum go.mod /build/
 WORKDIR /build
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o k8s-api-test cmd/k8s-api-test/main.go
 
@@ -25,6 +26,6 @@ ADD profile  /etc/profile
 
 ADD check /usr/bin/check
 ADD tools-usage /usr/bin/tools-usage
-COPY --from=builder /build/k8s-api-test /usr/bin/
+COPY --from=go-builder /build/k8s-api-test /usr/bin/
 
 CMD ["/usr/bin/tools-usage"]
